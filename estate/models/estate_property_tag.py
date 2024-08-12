@@ -1,0 +1,11 @@
+# -*- coding: utf-8 -*-
+# Part of Odoo. See LICENSE file for full copyright and licensing details.
+
+from odoo import fields, models
+
+
+class PropertyTag(models.Model):
+    _name = "estate.property.tag"
+    _description = "https://www.odoo.com/documentation/17.0/developer/tutorials/server_framework_101/07_relations.html"
+
+    name = fields.Char(required=True)
