@@ -7,6 +7,7 @@ from dateutil import relativedelta
 from odoo import api
 from odoo import fields
 from odoo import models
+from odoo.exceptions import UserError
 
 
 class PropertyOffer(models.Model):
@@ -34,3 +35,20 @@ class PropertyOffer(models.Model):
     def _inverse_date_deadline(self):
         for line in self:
             line.validity = (line.date_deadline - line.create_date.date()).days
+
+    def action_accept_property_offer(self):
+        for line in self:
+            if line.property_id.selling_price > 0:
+                raise UserError('Only one offer can be accepted for a given property.')
+            line.status = 'Accepted'
+            line.property_id.selling_price = line.price
+            line.property_id.buyer_id = line.partner_id
+        return True
+
+    def action_refuse_property_offer(self):
+        for line in self:
+            if line.status == 'Accepted':
+                line.property_id.selling_price = 0
+                line.property_id.buyer_id = None
+            line.status = 'Refused'
+        return True
