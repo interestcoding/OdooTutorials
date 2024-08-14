@@ -9,3 +9,7 @@ class PropertyTag(models.Model):
     _description = "https://www.odoo.com/documentation/17.0/developer/tutorials/server_framework_101/07_relations.html"
 
     name = fields.Char(required=True)
+
+    _sql_constraints = [
+        ('check_name', 'UNIQUE(name)', 'A property tag name must be unique.')
+    ]
