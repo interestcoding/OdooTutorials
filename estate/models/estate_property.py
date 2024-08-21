@@ -13,8 +13,9 @@ from odoo.tools import float_compare
 
 
 class Property(models.Model):
-    _name = "estate.property"
-    _description = "https://www.odoo.com/documentation/17.0/developer/tutorials/server_framework_101/03_basicmodel.html"
+    _name = 'estate.property'
+    _description = 'https://www.odoo.com/documentation/17.0/developer/tutorials/server_framework_101/03_basicmodel.html'
+    _order = 'id desc'
 
     def _default_date_availability(self):
         return fields.Date.today() + relativedelta.relativedelta(months=3)

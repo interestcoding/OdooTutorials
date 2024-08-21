@@ -11,8 +11,9 @@ from odoo.exceptions import UserError
 
 
 class PropertyOffer(models.Model):
-    _name = "estate.property.offer"
-    _description = "https://www.odoo.com/documentation/17.0/developer/tutorials/server_framework_101/07_relations.html"
+    _name = 'estate.property.offer'
+    _description = 'https://www.odoo.com/documentation/17.0/developer/tutorials/server_framework_101/07_relations.html'
+    _order = 'price desc'
 
     price = fields.Float()
     status = fields.Selection(
@@ -23,6 +24,7 @@ class PropertyOffer(models.Model):
     property_id = fields.Many2one('estate.property', required=True)
     validity = fields.Integer(default=7, string='Validity (days)')
     date_deadline = fields.Date(string='Deadline', compute='_compute_date_deadline', inverse="_inverse_date_deadline")
+    property_type_id = fields.Many2one(related="property_id.property_type_id", store=True)
 
     _sql_constraints = [
         ('check_price', 'CHECK(price > 0)', 'An offer price must be strictly positive.')
@@ -42,11 +44,12 @@ class PropertyOffer(models.Model):
 
     def action_accept_property_offer(self):
         for line in self:
-            if line.property_id.selling_price > 0:
+            if line.property_id.state == 'Offer Accepted':
                 raise UserError('Only one offer can be accepted for a given property.')
             line.status = 'Accepted'
             line.property_id.selling_price = line.price
             line.property_id.buyer_id = line.partner_id
+            line.property_id.state = 'Offer Accepted'
         return True
 
     def action_refuse_property_offer(self):
