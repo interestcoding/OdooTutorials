@@ -56,7 +56,7 @@ class Property(models.Model):
     salesperson_id = fields.Many2one('res.users', string='Salesman', default=lambda self: self.env.user)
     buyer_id = fields.Many2one('res.partner', string='Buyer', copy=False)
     tag_ids = fields.Many2many('estate.property.tag', string="Property Tag")
-    offer_ids = fields.One2many("estate.property.offer", "property_id")
+    offer_ids = fields.One2many('estate.property.offer', 'property_id')
 
     _sql_constraints = [
         ('check_expected_price', 'CHECK(expected_price > 0)', 'A property expected price must be strictly positive.'),
@@ -89,6 +89,11 @@ class Property(models.Model):
         else:
             self.garden_area = 0
             self.garden_orientation = ''
+
+    @api.ondelete(at_uninstall=False)
+    def _unlink_if_new_or_canceled(self):
+        if any(line.state not in ['New', 'Canceled'] for line in self):
+            raise UserError('It should not be possible to delete a property which is not new or canceled.')
 
     def action_set_property_sold(self):
         for record in self:

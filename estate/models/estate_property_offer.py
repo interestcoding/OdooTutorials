@@ -38,6 +38,16 @@ class PropertyOffer(models.Model):
             else:
                 line.date_deadline = datetime.now() + relativedelta.relativedelta(days=line.validity)
 
+    @api.model
+    def create(self, vals):
+        # 检查新报价是否低于现有报价
+        existing_offers = self.search([('property_id', '=', vals['property_id'])])
+        if existing_offers and vals['price'] < max(existing_offers.mapped('price')):
+            raise UserError('It should not be possible to create an offer with a lower price than an existing offer.')
+        property_obj = self.env['estate.property'].browse(vals['property_id'])
+        property_obj.state = 'Offer Received'
+        return super().create(vals)
+
     def _inverse_date_deadline(self):
         for line in self:
             line.validity = (line.date_deadline - line.create_date.date()).days
