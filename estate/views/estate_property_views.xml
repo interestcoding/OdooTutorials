@@ -14,7 +14,7 @@
                 <field name="living_area" filter_domain="[('living_area', '>=', self)]"/>
                 <field name="facades"/>
                 <filter string="Available" name="state"
-                        domain="['|', ('state', '=', 'New'), ('state', '=', 'Offer Received')]"/>
+                        domain="['|', ('state', '=', 'new'), ('state', '=', 'offer received')]"/>
                 <group expand="1" string="Group By">
                     <filter name="postcode" context="{'group_by':'postcode', 'residual_visible':True}"/>
                 </group>
@@ -29,10 +29,10 @@
             <form string="Property">
                 <header>
                     <button name="action_set_property_sold" type="object" string="Sold" class="oe_highlight"
-                            invisible="state == 'Sold'"/>
+                            invisible="state == 'sold'"/>
                     <button name="action_set_property_canceled" type="object" string="Canceled"
-                            invisible="state == 'Sold'"/>
-                    <field name="state" widget="statusbar" statusbar_visible="New,Offer Received,Offer Accepted,Sold"/>
+                            invisible="state == 'sold'"/>
+                    <field name="state" widget="statusbar" statusbar_visible="new,offer received,offer accepted,sold"/>
                 </header>
                 <sheet>
                     <div class="oe_title">
@@ -84,7 +84,7 @@
                             </group>
                         </page>
                         <page string="Offers">
-                            <field name="offer_ids" readonly="state in ['Offer Accepted', 'Sold', 'Canceled']"/>
+                            <field name="offer_ids" readonly="state in ['offer accepted', 'sold', 'canceled']"/>
                         </page>
                         <page string="Other info">
                             <group>
@@ -104,8 +104,8 @@
         <field name="name">estate.property.tree</field>
         <field name="model">estate.property</field>
         <field name="arch" type="xml">
-            <tree string="Property" decoration-success="state in ['Offer Received', 'Offer Accepted']"
-                  decoration-bf="state=='Offer Accepted'" decoration-muted="state=='Sold'">
+            <tree string="Property" decoration-success="state in ['offer received', 'offer accepted']"
+                  decoration-bf="state=='offer accepted'" decoration-muted="state=='sold'">
                 <field name="property_type_id"/>
                 <field name="name"/>
                 <field name="tag_ids" widget="many2many_tags"/>
@@ -120,10 +120,44 @@
         </field>
     </record>
 
+    <record id="estate_property_view_kanban" model="ir.ui.view">
+        <field name="name">estate.property.kanban</field>
+        <field name="model">estate.property</field>
+        <field name="arch" type="xml">
+            <kanban default_group_by="property_type_id" records_draggable="false">
+                <field name="state"/>
+                <templates>
+                    <t t-name="kanban-box">
+                        <div class="oe_kanban_global_click">
+                            <strong><field name="name"/></strong>
+                            <div>
+                                Expected Price:
+                                <field name="expected_price"/>
+                            </div>
+                            <div t-if="record.state.raw_value == 'offer received'">
+                                <div>
+                                    Best Offer:
+                                    <field name="best_price"/>
+                                </div>
+                            </div>
+                            <div t-if="record.state.raw_value == 'offer accepted'">
+                                <div>
+                                    Selling Price:
+                                    <field name="selling_price"/>
+                                </div>
+                            </div>
+                            <field name="tag_ids" widget="many2many_tags" options="{'color_field': 'color'}"/>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
     <record id="estate_property_action" model="ir.actions.act_window">
         <field name="name">Properties</field>
         <field name="res_model">estate.property</field>
-        <field name="view_mode">tree,form</field>
+        <field name="view_mode">tree,form,kanban</field>
         <field name="context">{'search_default_state': True}</field>
     </record>
 

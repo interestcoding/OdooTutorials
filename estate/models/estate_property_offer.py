@@ -17,7 +17,7 @@ class PropertyOffer(models.Model):
 
     price = fields.Float()
     status = fields.Selection(
-        selection=[('Accepted', 'Accepted'), ('Refused', 'Refused')],
+        selection=[('accepted', 'Accepted'), ('refused', 'Refused')],
         copy=False
     )
     partner_id = fields.Many2one('res.partner', string='Partner', required=True)
@@ -45,7 +45,7 @@ class PropertyOffer(models.Model):
         if existing_offers and vals['price'] < max(existing_offers.mapped('price')):
             raise UserError('It should not be possible to create an offer with a lower price than an existing offer.')
         property_obj = self.env['estate.property'].browse(vals['property_id'])
-        property_obj.state = 'Offer Received'
+        property_obj.state = 'offer received'
         return super().create(vals)
 
     def _inverse_date_deadline(self):
@@ -54,18 +54,18 @@ class PropertyOffer(models.Model):
 
     def action_accept_property_offer(self):
         for line in self:
-            if line.property_id.state == 'Offer Accepted':
+            if line.property_id.state == 'offer accepted':
                 raise UserError('Only one offer can be accepted for a given property.')
-            line.status = 'Accepted'
+            line.status = 'accepted'
             line.property_id.selling_price = line.price
             line.property_id.buyer_id = line.partner_id
-            line.property_id.state = 'Offer Accepted'
+            line.property_id.state = 'offer accepted'
         return True
 
     def action_refuse_property_offer(self):
         for line in self:
-            if line.status == 'Accepted':
+            if line.status == 'accepted':
                 line.property_id.selling_price = 0
                 line.property_id.buyer_id = None
-            line.status = 'Refused'
+            line.status = 'refused'
         return True
